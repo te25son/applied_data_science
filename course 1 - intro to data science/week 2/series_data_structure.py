@@ -37,3 +37,6 @@ print(s.index)
 
 s = pd.Series(['Tiger', 'Lion', 'Bear'], index=['India', 'Angola', 'America'])
 print(s)
+
+s = pd.Series(sports, index=['Golf', 'Sumo', 'Hockey'])
+print(s)
