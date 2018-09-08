@@ -56,6 +56,7 @@ def answer_three():
     """
     df_copy = df.copy()
     df_copy = df_copy[(df_copy['Gold'] > 0) & (df_copy['Gold.1'] > 0)]
+
     return ((df_copy['Gold'] - df_copy['Gold.1']) / df_copy['Gold.2']).idxmax()
 
 
@@ -64,6 +65,7 @@ def answer_four():
     Return a series called Points where each gold medal is worth 3, silver 2, and bronze 1
     """
     df['Points'] = df['Gold.2']*3 + df['Silver.2']*2 + df['Bronze.2']
+
     return df['Points']
 
 
@@ -86,25 +88,46 @@ def answer_six():
     Return the three most populous states from highest to lowest
     """
     df_copy = census_df.copy()
-    df['Pop'] = df_copy['STNAME', 'CENSUS2010POP']
-    return df['Pop']
+    df_copy = df_copy.groupby('STNAME')
+    states_pop = pd.DataFrame(columns=['Pop'])
+
+    for idx, col in df_copy:
+        states_pop.loc[idx] = [
+            col.sort_values(by='CENSUS2010POP', ascending=False)[1:4]['CENSUS2010POP'].sum()
+        ]
+
+    states_pop.sort_values(by='Pop', ascending=False, inplace=True)
+
+    return states_pop.index.tolist()[:3]
 
 
-df_copy = census_df.copy()
-df_copy = df_copy.groupby(['STNAME'])
-states_pop = pd.DataFrame(columns=['Pop'])
-for idx, col in df_copy:
-    states_pop.loc[idx] = [col.sort_values(by='CENSUS2010POP', ascending=False)[1:4]['CENSUS2010POP'].sum()]
+def answer_seven():
+    """
+    Return the county with the largest absolute population change between 2010 - 2015
+    """
+    df = census_df[
+        ['STNAME',
+         'CTYNAME',
+         'POPESTIMATE2015',
+         'POPESTIMATE2014',
+         'POPESTIMATE2013',
+         'POPESTIMATE2012',
+         'POPESTIMATE2011',
+         'POPESTIMATE2010']
+    ]
 
-# make copy of census data
-df_copy = census_df.copy()
+    df = df[df['STNAME'] != df['CTYNAME']]
 
-# group by each state 
-df_copy = df_copy.groupby('STNAME')['CENSUS2010POP']
+    print(df.head())
 
-print(df_copy.head())
+    index = (df.max(axis=1) - df.min(axis=1)).idxmax()
 
-
+    return census_df.loc[index]['CTYNAME']
 
 
-
+def answer_eight():
+    return census_df[
+        (census_df['REGION'] < 3) &
+        (census_df['CTYNAME'] == 'Washington County') &
+        (census_df['POPESTIMATE2015'] > census_df['POPESTIMATE2014'])
+    ][['STNAME', 'CTYNAME']]
